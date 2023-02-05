@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { useState, useEffect } from 'react';
 import Form from './components/Form/Form';
 import ContactList from 'components/ContactList/ContactList';
 import Filter from './components/Filter/Filter';
@@ -7,84 +7,70 @@ import warningMessage from './utils/warningMessage';
 import shortid from 'shortid';
 
 import css from './App.module.css';
-class App extends Component {
-  state = {
-    contacts: [],
-    filter: '',
-  };
 
-  componentDidMount() {
-    const parsedContacts = JSON.parse(localStorage.getItem('contacts'));
+export default function App() {
+  const [contacts, setContacts] = useState(() => {
+    const contacts = JSON.parse(localStorage.getItem('contacts'));
+    return contacts ? contacts : [];
+  });
+  const [filter, setFilter] = useState('');
 
-    if (
-      parsedContacts?.length //contacts && contacts.lenght
-    ) {
-      console.log(parsedContacts);
-      this.setState({ contacts: parsedContacts });
-    }
-  }
+  useEffect(() => {
+    localStorage.setItem('contacts', JSON.stringify(contacts));
+  }, [contacts]);
 
-  componentDidUpdate(prevProps, prevState) {
-    const { contacts } = this.state;
-
-    if (this.state.contacts !== prevState.contacts) {
-      console.log('update');
-      localStorage.setItem('contacts', JSON.stringify(contacts));
-    }
-  }
-  addContact = ({ name, number }) => {
-    const newContact = {
-      id: shortid.generate(),
-      name: name,
-      number: number,
-    };
-    const names = this.state.contacts.map(contact =>
-      contact.name.toLocaleLowerCase()
-    );
+  const isDublicate = name => {
     const normalizedNewContactName = name.toLocaleLowerCase();
 
-    if (names.indexOf(normalizedNewContactName) >= 0) {
+    const result = contacts.find(({ name }) => {
+      return name.toLocaleLowerCase() === normalizedNewContactName;
+    });
+
+    return Boolean(result);
+  };
+
+  const addContact = ({ name, number }) => {
+    if (isDublicate(name)) {
       warningMessage(name);
       return;
     }
 
-    this.setState(({ contacts }) => ({
-      contacts: [newContact, ...contacts],
-    }));
+    setContacts(prevContacts => {
+      const newContact = {
+        id: shortid.generate(),
+        name: name,
+        number: number,
+      };
+      return [newContact, ...prevContacts];
+    });
   };
 
-  deleteContact = contactId => {
-    this.setState(prevState => ({
-      contacts: prevState.contacts.filter(contact => contact.id !== contactId),
-    }));
+  const cangeFilter = e => {
+    setFilter(e.currentTarget.value);
   };
 
-  cangeFilter = e => {
-    this.setState({ filter: e.currentTarget.value });
-  };
+  const normalizedFilter = filter.toLocaleLowerCase();
+  const filteredContactList = contacts.filter(contact =>
+    contact.name.toLocaleLowerCase().includes(normalizedFilter)
+  );
 
-  render() {
-    console.log('render');
-    const { contacts, filter } = this.state;
-    const normalizedFilter = filter.toLocaleLowerCase();
-    const filteredContactList = contacts.filter(contact =>
-      contact.name.toLocaleLowerCase().includes(normalizedFilter)
+  const deleteContact = contactId => {
+    setContacts(prevContacts =>
+      prevContacts.filter(contact => contact.id !== contactId)
     );
+  };
 
-    return (
-      <div className={css.phonebook}>
-        <h1 className={css.phonebook__title}> Phonebook</h1>
-        <Form onSubmit={this.addContact} />
+  return (
+    <div className={css.phonebook}>
+      <h1 className={css.phonebook__title}> Phonebook</h1>
+      <Form onSubmit={addContact} />
 
-        <h2 className={css.phonebook__subtitle}>Contacts</h2>
-        <Filter value={filter} onChange={this.cangeFilter} />
-        <ContactList
-          contacts={filteredContactList}
-          onDeleteContact={this.deleteContact}
-        />
-      </div>
-    );
-  }
+      <h2 className={css.phonebook__subtitle}>Contacts</h2>
+      <Filter value={filter} onChange={cangeFilter} />
+      <ContactList
+        contacts={filteredContactList}
+        onDeleteContact={deleteContact}
+      />
+    </div>
+  );
 }
-
-export default App;
