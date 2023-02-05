@@ -1,23 +1,27 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Form from './components/Form/Form';
 import ContactList from 'components/ContactList/ContactList';
 import Filter from './components/Filter/Filter';
 import warningMessage from './utils/warningMessage';
+import useLocalStorage from 'hooks/useLocalStorage';
 
 import shortid from 'shortid';
 
 import css from './App.module.css';
 
 export default function App() {
-  const [contacts, setContacts] = useState(() => {
-    const contacts = JSON.parse(localStorage.getItem('contacts'));
-    return contacts ? contacts : [];
-  });
+  const [contacts, setContacts] = useLocalStorage('contacts', '');
   const [filter, setFilter] = useState('');
 
-  useEffect(() => {
-    localStorage.setItem('contacts', JSON.stringify(contacts));
-  }, [contacts]);
+  //----- Replaced with custom hook useLocalStorage
+  // const [contacts, setContacts] = useState(() => {
+  //   const contacts = JSON.parse(localStorage.getItem('contacts'));
+  //   return contacts ? contacts : [];
+  // });
+
+  // useEffect(() => {
+  //   localStorage.setItem('contacts', JSON.stringify(contacts));
+  // }, [contacts]);
 
   const isDublicate = name => {
     const normalizedNewContactName = name.toLocaleLowerCase();
