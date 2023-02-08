@@ -13,7 +13,7 @@ export default function App() {
   const [contacts, setContacts] = useLocalStorage('contacts', '');
   const [filter, setFilter] = useState('');
 
-  //----- Replaced with custom hook useLocalStorage
+  //----- Replaced with custom hook useLocalStorage -----
   // const [contacts, setContacts] = useState(() => {
   //   const contacts = JSON.parse(localStorage.getItem('contacts'));
   //   return contacts ? contacts : [];
