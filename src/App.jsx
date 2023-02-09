@@ -10,7 +10,7 @@ import shortid from 'shortid';
 import css from './App.module.css';
 
 export default function App() {
-  const [contacts, setContacts] = useLocalStorage('contacts', '');
+  const [contacts, setContacts] = useLocalStorage('contacts', []);
   const [filter, setFilter] = useState('');
 
   //----- Replaced with custom hook useLocalStorage -----
